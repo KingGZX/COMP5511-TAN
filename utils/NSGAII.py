@@ -1,7 +1,7 @@
 '''
 author: Zhexuan Gu
 Date: 2022-10-15 15:49:14
-LastEditTime: 2022-10-16 16:33:37
+LastEditTime: 2022-10-16 20:28:10
 FilePath: /Assignment 1 2/utils/NSGAII.py
 Description: Please implement
 '''
@@ -63,13 +63,13 @@ class NSGAII(SimpleTSPGA):
     
     def Fast_non_Dominated_Sort(self, num:int):
         # because there're at most N levels of domination(N = population)
-        self.dominated, self.dominationcnt, self.Levels = [[]] * num, [0] * num, [[]] * num
+        self.dominated, self.dominationcnt, self.Levels = [[] for i in range(num)], [0] * num, [[] for i in range(num)]
         self.individualCost, self.individualProfit, self.individualRank = [0] * num, [0] * num, [0] * num
         for i in range(num):
             choromosomea = self.chromosomes[i]
             costa, profita = self.TSPCost(choromosomea), self.CalculateProfits(choromosomea)
             self.individualCost[i], self.individualProfit[i] = costa, profita
-            for j in range(i + 1, self.population):
+            for j in range(i + 1, num):
                 choromosomeb = self.chromosomes[j]
                 # judge the relationship of dominance
                 costb, profitb = self.TSPCost(choromosomeb), self.CalculateProfits(choromosomeb)
@@ -163,8 +163,8 @@ class NSGAII(SimpleTSPGA):
             self.Elitism()
             self.offSprings.clear()
             # print some debugging information
-            if epoch % 200 == 0:
-                print("process -------- %d%%" % (epoch * 100 / epochs))
+            if epoch % 10 == 0:
+                print("process -------- %f%%" % (epoch * 100 / epochs))
         self.ShowTextResult()
         self.individualCost.clear()
         self.individualProfit.clear()
