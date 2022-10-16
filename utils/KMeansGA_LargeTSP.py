@@ -138,6 +138,8 @@ class GAWithCluster(SimpleTSPGA):
         return dele1, dele2, insr1, insr2
     
     def MergeNodes(self, index:int, dele1:int, dele2:int, insr1:int, insr2:int, index1:int, index2:int):
+        '''
+        # debug information
         print("Merging Cluster %d and %d, link nodes are %d, %d" % (index, index + 1, index1, index2))
         print("first route is:", end="")
         print(self.ClusterBestRoute[index])
@@ -145,6 +147,7 @@ class GAWithCluster(SimpleTSPGA):
         print(self.ClusterBestRoute[index + 1])
         print("deleting %d, %d respectively" % (dele1, dele2))
         print("inserting %d, %d respectively" % (insr1, insr2))
+        '''
         route1Len, route2Len = len(self.ClusterBestRoute[index]), len(self.ClusterBestRoute[index + 1])
         route1Len = len(self.ClusterBestRoute[index])
         route2Len = len(self.ClusterBestRoute[index + 1])

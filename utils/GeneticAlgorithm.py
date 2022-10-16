@@ -1,7 +1,7 @@
 '''
 author: Zhexuan Gu
 Date: 2022-09-27 16:22:43
-LastEditTime: 2022-10-11 20:44:55
+LastEditTime: 2022-10-16 13:41:51
 FilePath: /Assignment 1 2/utils/GeneticAlgorithm.py
 Description: Question1 of Assignment1
 '''
@@ -28,6 +28,7 @@ class SimpleTSPGA:
         self.routeLen = np.inf
         self.initialbestlen = np.inf
         self.best_route = []
+        self.offSprings = []
     
     '''
     description: to make fitness list ordered
@@ -86,6 +87,10 @@ class SimpleTSPGA:
     '''    
     def SimpleSelection(self):
         totalFitness = sum(self.Fitness)
+        '''
+        since we are definitly going to reintroduce the elite in last generation
+        I'm intend not to let those elite take part in the 
+        '''
         self.Percentage = [fitness / totalFitness for fitness in self.Fitness]
         # after calculating the percentage, we randomly generate some number and decide which choromosomes are chosen
         selected = []
@@ -133,6 +138,8 @@ class SimpleTSPGA:
                     offspring2 += Slice2
                 offspring2.append(parent1[i])
             i += 1
+        self.offSprings.append(offspring1)
+        self.offSprings.append(offspring2)
         return offspring1, offspring2
     
     def SimpleCrossOver(self):
@@ -159,6 +166,7 @@ class SimpleTSPGA:
                 offspring = self.chromosomes[i]
                 offspring[exA], offspring[exB] = offspring[exB], offspring[exA]       
                 self.chromosomes[i] = offspring
+                self.offSprings.append(offspring)
 
     
     def FitnessFunction(self, cost:float):
@@ -247,6 +255,7 @@ class SimpleTSPGA:
         self.best_route.clear()
         self.Percentage.clear()
         self.Fitness.clear()
+        self.offSprings.clear()
         self.routeLen = np.inf
         #pass
         
