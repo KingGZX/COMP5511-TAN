@@ -1,7 +1,7 @@
 '''
 author: Zhexuan Gu
 Date: 2022-10-09 14:29:52
-LastEditTime: 2022-10-11 20:45:07
+LastEditTime: 2022-10-20 19:51:29
 FilePath: /Assignment 1 2/utils/DynamicTSP.py
 Description: Question2 of Assignment1
 '''
@@ -10,13 +10,12 @@ Description: Question2 of Assignment1
 from random import randrange
 from utils.GeneticAlgorithm import SimpleTSPGA
 import numpy as np
+import utils.visualizeScatterPlot as vsp
 
 class DynamicGA(SimpleTSPGA):
     def __init__(self, customernum: int, population: int, distancematrix, mutationrate: float, crossoverrate: float, xcoords, ycoords) -> None:
-        super().__init__(customernum, population, distancematrix, mutationrate, crossoverrate)
+        super().__init__(customernum, population, distancematrix, mutationrate, crossoverrate, xcoords, ycoords)
         self.VisitPermission = 50       # At first, it's only allowed to visit 50 customers
-        self.Xcoordinations = xcoords   
-        self.Ycoordinations = ycoords
         self.LastEventBestChromosomes = []
     
     '''
@@ -51,8 +50,8 @@ class DynamicGA(SimpleTSPGA):
                 self.diatance_matrix[i][j] = self.diatance_matrix[j][i] = distance
                 
     def ReuseChromosomes(self):
-        # reuse 10 of the last event best choromosomes
-        reusenum = 10
+        # reuse 5 of the last event best choromosomes
+        reusenum = 5
         self.LastEventBestChromosomes = self.chromosomes[0:10].copy()
         self.Fitness.clear()
         self.chromosomes.clear()
@@ -93,6 +92,12 @@ class DynamicGA(SimpleTSPGA):
                         self.Fitness.clear()
                         self.RandomGenerateChoromoson(self.population)
                 self.routeLen = np.inf
+            if epoch % 200 == 0:
+                self.logepoch.append(epoch)
+                avgfit = sum(self.Fitness) * 1e4 / self.population
+                self.logfitness.append(avgfit)
+        vsp.drawFitness(self.logepoch, self.logfitness)
+        vsp.drawRoute(self.best_route, self.Xcoordinations, self.Ycoordinations, self.routeLen)
         print("Finish Training, best route is: ", end="")
         print(self.best_route)
         self.chromosomes.clear()

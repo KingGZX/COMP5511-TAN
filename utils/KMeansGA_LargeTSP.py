@@ -1,24 +1,40 @@
 '''
 author: Zhexuan Gu
 Date: 2022-10-10 00:00:51
-LastEditTime: 2022-10-11 20:42:55
+LastEditTime: 2022-10-20 20:56:20
 FilePath: /Assignment 1 2/utils/KMeansGA_LargeTSP.py
 Description: Question3 of Assignment1
 '''
 import numpy as np
 import random
 from utils.GeneticAlgorithm import SimpleTSPGA
+import utils.visualizeScatterPlot as vsp
 
 class GAWithCluster(SimpleTSPGA):
     def __init__(self, customernum: int, population: int, distancematrix, mutationrate: float, crossoverrate: float, center:int, xcoords, ycoords) -> None:
-        super().__init__(customernum, population, distancematrix, mutationrate, crossoverrate)
+        super().__init__(customernum, population, distancematrix, mutationrate, crossoverrate, xcoords, ycoords)
         self.clusterCenternum = center
-        self.Xcoordinations = xcoords   
-        self.Ycoordinations = ycoords
         self.ClusterBestRoute = []
         self.ClusterBestRouteLen = []
         self.Centers = []
-        self.Labels = [i for i in range(len(self.Xcoordinations))]      # to record which cluster each customer belongs to
+        self.Labels = [i for i in range(len(self.Xcoordinations) * 2)]      # to record which cluster each customer belongs to
+        
+    def EnlargeCities(self):
+        # adding another 101 cities
+        for i in range(len(self.Xcoordinations)):
+            self.Xcoordinations.append(self.Xcoordinations[i] + 100)
+            self.Ycoordinations.append(self.Ycoordinations[i])
+        # recalculate the matrix
+        distance_matrix = np.zeros((len(self.Xcoordinations), len(self.Ycoordinations)))
+        for i in range(len(self.Xcoordinations)):
+            for j in range(i + 1, len(self.Xcoordinations), 1):
+                x_diff = self.Xcoordinations[j] - self.Xcoordinations[i]
+                y_diff = self.Ycoordinations[j] - self.Ycoordinations[i]
+                distance = np.sqrt(np.square(x_diff) + np.square(y_diff))
+                distance_matrix[i][j] = distance_matrix[j][i] = distance
+        self.diatance_matrix = distance_matrix
+            
+        
     
     def RandomGenerateChoromoson(self, clusterIndex)->bool:
         # generate chromosomes for each cluster, so override the original randomgenerator method
@@ -241,7 +257,9 @@ class GAWithCluster(SimpleTSPGA):
     def Solver(self, epochs: int):
         # I'm not intend to write a parallel trainning programme
         # therefore, I choose to train every Cluster and finally combine
+        self.EnlargeCities()
         self.KMeans()
+        vsp.drawClusters(self.Xcoordinations, self.Ycoordinations, self.Labels, self.Centers)
         for i in range(self.clusterCenternum):
             flag = self.RandomGenerateChoromoson(i)
             if flag == True:
@@ -253,6 +271,9 @@ class GAWithCluster(SimpleTSPGA):
                     self.CalculateFitness()
                     # print some debugging information
                     if epoch % 200 == 0:
+                        self.logepoch.append(epoch)
+                        avgfit = sum(self.Fitness) * 1e4 / self.population
+                        self.logfitness.append(avgfit)
                         print("Cluster %d, Epoch %d: best route length is %d  -------- avearage fitness is %f" % (i, epoch, self.routeLen, 
                                                                                                     sum(self.Fitness) * 1e4 / self.population))
                 self.ClusterBestRoute.append(self.best_route)
@@ -266,6 +287,7 @@ class GAWithCluster(SimpleTSPGA):
         self.routeLen = 0
         self.CombineHamiltonCircle()
         print("After combining all clusters, the optimal value is: %d" % (self.routeLen))
+        vsp.drawRoute(self.ClusterBestRoute[self.clusterCenternum - 1], self.Xcoordinations, self.Ycoordinations, self.routeLen)
         print("Best route is: ", end="")
         print(self.ClusterBestRoute[self.clusterCenternum - 1])
         self.chromosomes.clear()

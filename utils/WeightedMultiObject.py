@@ -1,7 +1,7 @@
 '''
 author: Zhexuan Gu
 Date: 2022-10-15 12:31:48
-LastEditTime: 2022-10-15 14:59:13
+LastEditTime: 2022-10-22 11:01:26
 FilePath: /Assignment 1 2/utils/WeightedMultiObject.py
 Description: Weighted Multi-objective optimization function
 '''
@@ -9,14 +9,16 @@ from cmath import cos
 from utils.GeneticAlgorithm import SimpleTSPGA
 import random
 import numpy as np
+import utils.visualizeScatterPlot as vsp
 
 class WeightedGA(SimpleTSPGA):
-    def __init__(self, customernum: int, population: int, distancematrix, mutationrate: float, crossoverrate: float, weight:float) -> None:
-        super().__init__(customernum, population, distancematrix, mutationrate, crossoverrate)
+    def __init__(self, customernum: int, population: int, distancematrix, mutationrate: float, crossoverrate: float, weight:float, xcoords, ycoords) -> None:
+        super().__init__(customernum, population, distancematrix, mutationrate, crossoverrate, xcoords, ycoords)
         self.Profits = []
         self.RealRouteLen = np.inf
         self.RealProfits = np.inf
         self.weight = weight
+        self.routecosts = []
         
     def RandomGenerateProfit(self):
         random.seed(3047)
@@ -59,8 +61,7 @@ class WeightedGA(SimpleTSPGA):
         
         and exponetial funtion guarantees that the fitness must be positive!!
         '''
-        return np.exp(-cost/1e4)
-    
+        return np.exp(-cost/1e4) 
     
     def Solver(self, epochs: int):
         self.RandomGenerateProfit()
@@ -82,8 +83,7 @@ class WeightedGA(SimpleTSPGA):
         self.chromosomes.clear()
         self.best_route.clear()
         self.Percentage.clear()
-        self.Fitness.clear()
+        self.routecosts.clear()
         self.routeLen = np.inf
-        self.RealProfits = np.inf
-        self.RealRouteLen = np.inf
+        return self.RealRouteLen, self.RealProfits
         #pass

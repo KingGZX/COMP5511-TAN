@@ -1,7 +1,7 @@
 '''
 author: Zhexuan Gu
 Date: 2022-10-15 15:49:14
-LastEditTime: 2022-10-16 20:28:10
+LastEditTime: 2022-10-22 09:55:29
 FilePath: /Assignment 1 2/utils/NSGAII.py
 Description: Please implement
 '''
@@ -10,10 +10,11 @@ import profile
 from utils.GeneticAlgorithm import SimpleTSPGA
 import random
 import numpy as np
+import utils.visualizeScatterPlot as vsp
 
 class NSGAII(SimpleTSPGA):
-    def __init__(self, customernum: int, population: int, distancematrix, mutationrate: float, crossoverrate: float, objNum:int) -> None:
-        super().__init__(customernum, population, distancematrix, mutationrate, crossoverrate)
+    def __init__(self, customernum: int, population: int, distancematrix, mutationrate: float, crossoverrate: float, objNum:int, xcoords, ycoords) -> None:
+        super().__init__(customernum, population, distancematrix, mutationrate, crossoverrate, xcoords, ycoords)
         self.objFunctions = objNum
         self.Profits = []                       # profit matrix
         self.dominated = []
@@ -24,6 +25,8 @@ class NSGAII(SimpleTSPGA):
         self.individualProfit = []
         self.crowdingDistances = []
         self.oldGeneration = []
+        self.routecosts = []
+        self.profits = []
         
         
     def RandomGenerateProfit(self):
@@ -141,7 +144,25 @@ class NSGAII(SimpleTSPGA):
         for choromosome in self.chromosomes:
             cost = self.TSPCost(choromosome)
             profit = self.CalculateProfits(choromosome)
-            print("optimal solution: cost is %f, profit is %f." % (cost, profit))
+            print("optimal solution: cost is %f, profit is %f." % (cost, profit)) 
+            
+    def DrawPareto(self):
+        for chromosome in self.chromosomes:
+            self.RoutecostAndProfit(chromosome)
+        vsp.drawParetoFront(self.routecosts, self.profits)
+    
+    def RoutecostAndProfit(self, chromosome):
+        realLen, realProf = 0, 0
+        for i in range(1, len(chromosome)):
+            # for a specific i in chromosome, it's just a gene
+            realLen += self.diatance_matrix[chromosome[i], chromosome[i - 1]]
+            realProf += self.Profits[chromosome[i - 1], chromosome[i]]
+        # back to the start point
+        if len(chromosome) > 1:
+            realLen += self.diatance_matrix[chromosome[len(chromosome) - 1], chromosome[0]]
+            realProf += self.Profits[chromosome[len(chromosome) - 1], chromosome[0]]
+        self.routecosts.append(realLen)
+        self.profits.append(realProf)
     
     def Solver(self, epochs: int):
         self.RandomGenerateProfit()
@@ -166,6 +187,7 @@ class NSGAII(SimpleTSPGA):
             if epoch % 10 == 0:
                 print("process -------- %f%%" % (epoch * 100 / epochs))
         self.ShowTextResult()
+        self.DrawPareto()
         self.individualCost.clear()
         self.individualProfit.clear()
         self.individualRank.clear()
@@ -179,5 +201,7 @@ class NSGAII(SimpleTSPGA):
         self.Percentage.clear()
         self.Fitness.clear()
         self.offSprings.clear()
+        self.profits.clear()
+        self.routecosts.clear()
         self.routeLen = np.inf
         #pass

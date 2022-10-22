@@ -1,12 +1,13 @@
 '''
 author: Zhexuan Gu
 Date: 2022-09-27 16:22:43
-LastEditTime: 2022-10-16 13:41:51
+LastEditTime: 2022-10-20 20:37:19
 FilePath: /Assignment 1 2/utils/GeneticAlgorithm.py
 Description: Question1 of Assignment1
 '''
 import random
 import numpy as np
+import utils.visualizeScatterPlot as vsp
 
 '''
 description: It's a minimization problem, so lower cost means higher fitness
@@ -14,12 +15,14 @@ event:
 return {*}
 '''
 class SimpleTSPGA:
-    def __init__(self, customernum:int, population:int, distancematrix, mutationrate:float, crossoverrate:float) -> None:
+    def __init__(self, customernum:int, population:int, distancematrix, mutationrate:float, crossoverrate:float, xcoords, ycoords) -> None:
         self.genes = customernum      # this num implys the number of genes
         self.population = population    # generate fixed num of chromosome
         self.diatance_matrix = distancematrix
         self.mutationrate = mutationrate
         self.crossoverrate = crossoverrate
+        self.Xcoordinations = list(xcoords)   
+        self.Ycoordinations = list(ycoords)
         self.chromosomes = []                                         # record all choromosomes
         self.Elite = []                                               # elite chromosome
         self.Fitness = []                                             # inverse of the cost of a road
@@ -29,6 +32,7 @@ class SimpleTSPGA:
         self.initialbestlen = np.inf
         self.best_route = []
         self.offSprings = []
+        self.logepoch, self.logfitness = [], []
     
     '''
     description: to make fitness list ordered
@@ -237,6 +241,7 @@ class SimpleTSPGA:
     return {*}
     '''    
     def Solver(self, epochs:int):
+        self.best_route.clear()
         self.RandomGenerateChoromoson()
         #self.routeLen = self.initialbestlen
         print("After initialization, the best route cost is: %d" % (self.initialbestlen))
@@ -247,16 +252,21 @@ class SimpleTSPGA:
             self.CalculateFitness()
             # print some debugging information
             if epoch % 200 == 0:
-                print("Epoch %d: best route length is %d  -------- avearage fitness is %f" % (epoch, self.routeLen, 
-                                                                                              sum(self.Fitness) * 1e4 / self.population))
+                self.logepoch.append(epoch)
+                avgfit = sum(self.Fitness) * 1e4 / self.population
+                self.logfitness.append(avgfit)
+                print("Epoch %d: best route length is %d  -------- avearage fitness is %f" % (epoch, self.routeLen, avgfit))
+        vsp.drawFitness(self.logepoch, self.logfitness)
+        vsp.drawRoute(self.best_route, self.Xcoordinations, self.Ycoordinations, self.routeLen)
         print("Finish Training, best route is: ", end="")
         print(self.best_route)
         self.chromosomes.clear()
-        self.best_route.clear()
         self.Percentage.clear()
         self.Fitness.clear()
         self.offSprings.clear()
         self.routeLen = np.inf
+        self.logepoch.clear()
+        self.logfitness.clear()
         #pass
         
         
